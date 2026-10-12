@@ -1,4 +1,4 @@
-# Sufijo aleatorio para nombres globalmente únicos (ACR, APIM y SWA)
+# Sufijo aleatorio para nombres globalmente únicos
 resource "random_string" "suffix" {
   length  = 6
   special = false
@@ -10,6 +10,22 @@ data "azurerm_resource_group" "rg" {
   name = "1-75e47af0-playground-sandbox"
 }
 
+# Cuenta de almacenamiento para el backend remoto de Terraform
+resource "azurerm_storage_account" "tfstate" {
+  name                     = "sttfstate${random_string.suffix.result}"
+  resource_group_name      = data.azurerm_resource_group.rg.name
+  location                 = data.azurerm_resource_group.rg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  min_tls_version          = "TLS1_2"
+}
+
+resource "azurerm_storage_container" "tfstate" {
+  name                  = "tfstatesub"
+  storage_account_name  = azurerm_storage_account.tfstate.name
+  container_access_type = "private"
+}
+
 # 1. Azure Container Registry (ACR) - SKU Basic
 resource "azurerm_container_registry" "acr" {
   name                = "acrsynopsis${random_string.suffix.result}"
@@ -19,7 +35,7 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
-# 2. Azure Kubernetes Service (AKS) - Con OIDC habilitado obligatoriamente
+# 2. Azure Kubernetes Service (AKS) - Con OIDC habilitado
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-synopsis-dev"
   location            = data.azurerm_resource_group.rg.location
@@ -36,7 +52,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
     type = "SystemAssigned"
   }
 
-  # Habilitamos OIDC de forma explícita para evitar el conflicto de estado
   oidc_issuer_enabled       = true
   workload_identity_enabled = true
 
@@ -56,11 +71,11 @@ resource "azurerm_api_management" "apim" {
   sku_name            = "Consumption_0"
 }
 
-# 4. Azure Static Web Apps (SWA) - Ubicado en una región compatible (eastus2)
+# 4. Azure Static Web Apps (SWA) - Ubicado en región compatible
 resource "azurerm_static_web_app" "swa" {
   name                = "swa-synopsis-${random_string.suffix.result}"
   resource_group_name = data.azurerm_resource_group.rg.name
-  location            = "eastus2" # Región soportada por la API de Static Web Apps
+  location            = "eastus2"
   sku_tier            = "Standard"
   sku_size            = "Standard"
 }
