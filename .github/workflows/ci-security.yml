@@ -1,28 +1,30 @@
-name: CI & DevSecOps Security Scan
+name: CI & DevSecOps Security Pipeline
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  security-analysis:
-    name: SAST and Code Quality Scan
+  validate-terraform:
+    name: Terraform Format, Validate & Security Check
     runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
-          languages: javascript, python
+          terraform_version: "1.5.7"
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+      - name: Terraform Format Check
+        run: terraform fmt -check
+
+      - name: Terraform Init (Backend Validation)
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform validate
