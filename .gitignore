@@ -1,0 +1,11 @@
+# Local Terraform directories
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfplan
+*.binary
+
+# Sensitive files
+*.tfvars
+!example.tfvars

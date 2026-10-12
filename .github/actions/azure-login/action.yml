@@ -1,0 +1,22 @@
+name: 'Azure Login Composite Action'
+description: 'Acción compuesta para inicio de sesión en Azure mediante OIDC'
+inputs:
+  client-id:
+    description: 'Azure Client ID'
+    required: true
+  tenant-id:
+    description: 'Azure Tenant ID'
+    required: true
+  subscription-id:
+    description: 'Azure Subscription ID'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Azure Login via OIDC
+      uses: azure/login@v2
+      with:
+        client-id: ${{ inputs.client-id }}
+        tenant-id: ${{ inputs.tenant-id }}
+        subscription-id: ${{ inputs.subscription-id }}

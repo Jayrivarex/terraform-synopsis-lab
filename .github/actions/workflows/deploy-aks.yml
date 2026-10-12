@@ -1,0 +1,32 @@
+name: Reusable AKS Deployment Workflow
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Set AKS Context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: '1-75e47af0-playground-sandbox'
+          cluster-name: 'aks-synopsis-dev'
+
+      - name: Deploy Application to AKS
+        run: |
+          echo "Desplegando la versión ${{ inputs.image-tag }} en el entorno ${{ inputs.environment }}..."
+          # kubectl set image deployment/app-deployment app=acrsynopsis7cug6f.azurecr.io/app:${{ inputs.image-tag }} -n default
