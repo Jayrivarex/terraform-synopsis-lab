@@ -1,4 +1,4 @@
-# Local Terraform directories
+# Local Terraform directories and cache
 .terraform/
 *.tfstate
 *.tfstate.*
@@ -6,6 +6,6 @@ crash.log
 *.tfplan
 *.binary
 
-# Sensitive files
+# Sensitive files / variables
 *.tfvars
 !example.tfvars
